@@ -2,6 +2,11 @@
 #include <gtest/gtest.h>
 
 #include "synchro/Broadcaster.hpp"
+#include "synchro/SynchronizedData.hpp"
+
+#include <iostream>
+#include <typeindex>
+#include <typeinfo>
 
 using namespace synchro;
 
@@ -24,4 +29,28 @@ TEST(synchrodata, broadcast)
     connection.disconnect();
     Broadcaster.send(std::make_shared<int>(value));
     ASSERT_EQ(counter, 1);
+}
+
+TEST(synchrodata, data)
+{
+    struct R1
+    {
+    };
+    struct R2
+    {
+    };
+    struct O1
+    {
+    };
+    struct O2
+    {
+    };
+    struct L1
+    {
+    };
+    struct L2
+    {
+    };
+    SynchronizedData<Required<R1, R2>, Optional<O1, O2>, List<L1, L2>> data;
+    data.send<R1>(std::make_shared<R1>());
 }
