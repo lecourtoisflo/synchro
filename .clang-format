@@ -9,7 +9,6 @@ ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 IndentWidth:     4
 AlignConsecutiveAssignments: true
-AlignConsecutiveDeclarations: true
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: true
@@ -34,6 +33,7 @@ AllowShortFunctionsOnASingleLine: All
 AlignAfterOpenBracket: Align
 AlignEscapedNewlinesLeft: false
 AlignOperands:   true
+AlignConsecutiveDeclarations: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortLoopsOnASingleLine: false

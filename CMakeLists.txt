@@ -54,6 +54,7 @@ include(Coverage)
 # You should try to give as much control over the project setup to the user.
 # When modifying compile flags for example, if they are not mandatory, provide an option.
 
+option(${PROJECT_NAME}_BUILD_TESTS "Compile unit tests" ON)
 option(${PROJECT_NAME}_USE_DOXYGEN "Add a doxygen target to generate the documentation" ON)
 option(${PROJECT_NAME}_USE_ADDITIONAL_SOURCEFILE "Use the additional source file" ON)
 option(${PROJECT_NAME}_INSTALL "Should ${PROJECT_NAME} be added to the install list? Useful if included using add_subdirectory." ON)
@@ -76,11 +77,14 @@ cmake_dependent_option(${PROJECT_NAME}_BUILD_TESTS
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+# Packages #
+find_package(Boost 1.71 REQUIRED system)
+
 ###############
 ##  Project  ##
 ###############
 
-
+add_subdirectory(source)
 
 # Check for LTO support (needs to be after project(...) )
 # find_lto(CXX)
@@ -88,10 +92,6 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 #==========================#
 #  Synchro executable  #
 #==========================#
-
-# Always list the source files explicitly, including headers so that they are listed in the IDE
-# If you need to use files based on a variable value, use target_sources
-add_executable(Synchro source/main.cpp)
 
 # Require c++14, this is better than setting CMAKE_CXX_STANDARD since it won't pollute other targets
 # note : cxx_std_* features were added in CMake 3.8.2
@@ -117,14 +117,14 @@ if(${PROJECT_NAME}_BUILD_TESTS)
     set(TEST_RUNNER_PARAMS "--force-colors=true" CACHE STRING "Options to add to our test runners commands")
     # In a real project you most likely want to exclude test folders
     # list(APPEND CUSTOM_COVERAGE_EXCLUDE "/test/")
-    # add_subdirectory(tests)
+    add_subdirectory(tests)
     # You can setup some custom variables and add them to the CTestCustom.cmake.in template to have custom ctest settings
     # For example, you can exclude some directories from the coverage reports such as third-parties and tests
-    # configure_file(
-    #     ${CMAKE_CURRENT_LIST_DIR}/cmake/CTestCustom.cmake.in
-    #     ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake
-    #     @ONLY
-    # )
+    configure_file(
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/CTestCustom.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/CTestCustom.cmake
+        @ONLY
+    )
 endif()
 
 #############
