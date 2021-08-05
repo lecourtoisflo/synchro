@@ -9,11 +9,11 @@
 namespace synchro
 {
 template<class T>
-class Pooler
+class Broadcaster
 {
 public:
     using Connection   = boost::signals2::connection;
-    using CallbackType = void(std::shared_ptr<T>);
+    using CallbackType = void(const std::shared_ptr<T>&);
     using Callback     = std::function<CallbackType>;
 
 public:
