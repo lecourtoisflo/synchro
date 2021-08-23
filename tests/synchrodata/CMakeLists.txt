@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.6)
 # Creating multiple executables is of course not mandatory, and one could use the same executable with various command lines to filter what tests to run.
 
 add_executable(synchrodata_TEST SynchrodataTest.cpp)
+target_set_warnings(synchrodata_TEST ENABLE ALL AS_ERROR ALL DISABLE Annoying) 
 target_link_libraries(synchrodata_TEST SynchroTest synchro::synchrodata)
 
 add_test(

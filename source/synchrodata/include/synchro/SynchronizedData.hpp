@@ -47,7 +47,7 @@ struct Utils
     static constexpr bool contains()
     {
         return std::disjunction_v<std::is_same<U, Ts>...>;
-    };
+    }
 };
 
 template<class R, class O, class L>
