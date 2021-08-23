@@ -50,16 +50,16 @@ public:
             return std::get<Broadcaster<T>>(requiredBroadcasters_)
                 .onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
         }
-        // else if constexpr (Contains<T, typename O::TupleType>())
-        // {
-        //     return std::get<Broadcaster<T>>(optionalBroadcasters_)
-        //         .onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
-        // }
-        // else if constexpr (Contains<T, typename L::TupleType>())
-        // {
-        //     return std::get<Broadcaster<T>>(listBroadcasters_)
-        //         .onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
-        // }
+        else if constexpr (Contains<T, typename O::TupleType>())
+        {
+            return std::get<Broadcaster<T>>(optionalBroadcasters_)
+                .onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
+        }
+        else if constexpr (Contains<T, typename L::TupleType>())
+        {
+            return std::get<Broadcaster<T>>(listBroadcasters_)
+                .onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
+        }
         return Connection<T>();
     }
 
@@ -77,26 +77,27 @@ public:
                 // TODO send signals waiting
                 // Clear
                 clearAlldata();
+                initDone_ = true;
             }
         }
-        // else if constexpr (Utils::contains<T, Type<O>>())
-        // {
-        //     if (areAllRequiredPresent())
-        //     {
-        //         std::get<Broadcaster<T>>(optionalBroadcasters_).send(data);
-        //         return;
-        //     }
-        //     std::get<std::shared_ptr<T>>(optionalData_) = data;
-        // }
-        // else if constexpr (Utils::contains<T, Type<L>>())
-        // {
-        //     if (areAllRequiredPresent())
-        //     {
-        //         std::get<Broadcaster<T>>(requiredBroadcasters_).send(data);
-        //         return;
-        //     }
-        //     std::get<std::list<std::shared_ptr<T>>>(listData_).push_back(data);
-        // }
+        else if constexpr (Contains<T, typename O::TupleType>())
+        {
+            if (initDone_)
+            {
+                std::get<Broadcaster<T>>(optionalBroadcasters_).send(data);
+                return;
+            }
+            std::get<std::shared_ptr<T>>(optionalData_) = data;
+        }
+        else if constexpr (Contains<T, typename L::TupleType>())
+        {
+            if (initDone_)
+            {
+                std::get<Broadcaster<T>>(requiredBroadcasters_).send(data);
+                return;
+            }
+            std::get<std::list<std::shared_ptr<T>>>(listData_).push_back(data);
+        }
     }
 
 private:
@@ -110,9 +111,19 @@ private:
     template<class T>
     struct Data;
     template<class... Ts>
-    struct Data<std::tuple<Ts...>> : std::tuple<std::shared_ptr<Ts>...>
+    struct Data<std::tuple<Ts...>>
     {
         using type = std::tuple<std::shared_ptr<Ts>...>;
+    };
+
+    template<class T>
+    struct DataList;
+    template<class... Ts>
+    struct DataList<std::tuple<Ts...>>
+    {
+        template<class T>
+        using element = std::list<std::shared_ptr<T>>;
+        using type    = std::tuple<element<Ts>...>;
     };
 
 private:
@@ -126,18 +137,19 @@ private:
     {
         auto clear = [](auto&... ptr) { (..., ptr.reset()); };
         std::apply(clear, requiredData_);
-        // std::apply(clear, optionalData_);
-        // std::apply([](auto&... list) { (..., list.clear()); }, listData_);
+        std::apply(clear, optionalData_);
+        std::apply([](auto&... list) { (..., list.clear()); }, listData_);
     }
 
 private:
+    bool initDone_ = false;
     typename Broadcasters<typename R::TupleType>::type requiredBroadcasters_;
-    // std::tuple<Broadcaster<Type<O>>> optionalBroadcasters_;
-    // std::tuple<Broadcaster<Type<L>>> listBroadcasters_;
+    typename Broadcasters<typename O::TupleType>::type optionalBroadcasters_;
+    typename Broadcasters<typename L::TupleType>::type listBroadcasters_;
 
     typename Data<typename R::TupleType>::type requiredData_;
-    // std::tuple<std::shared_ptr<Type<O>>> optionalData_;
-    // std::tuple<std::list<std::shared_ptr<Type<L>>>> listData_;
+    typename Data<typename O::TupleType>::type optionalData_;
+    typename DataList<typename L::TupleType>::type listData_;
 };
 
 } // namespace synchro

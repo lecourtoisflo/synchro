@@ -51,11 +51,17 @@ TEST(synchrodata, data)
     struct L2
     {
     };
-    SynchronizedData<Required<R1>> data;
-    bool received = false;
+    SynchronizedData<Required<R1>, Optional<O1, O2>, List<L1, L2>> data;
+    bool received     = false;
+    bool received_opt = false;
     auto connection =
         data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });
+    auto connection_opt =
+        data.onReceived<O1>([&received_opt](const std::shared_ptr<O1>&) { received_opt = true; });
 
     data.send<R1>(std::make_shared<R1>());
     ASSERT_TRUE(received);
+
+    data.send<O1>(std::make_shared<O1>());
+    ASSERT_TRUE(received_opt);
 }
