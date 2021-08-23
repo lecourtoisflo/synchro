@@ -34,7 +34,7 @@ struct Contains<T, std::tuple<Ts...>> : std::disjunction<std::is_same<T, Ts>...>
 {
 };
 
-template<class R, class O, class L>
+template<class R, class O = Optional<>, class L = List<>>
 class SynchronizedData
 {
 public:

@@ -51,7 +51,7 @@ TEST(synchrodata, data)
     struct L2
     {
     };
-    SynchronizedData<Required<R1>, Optional<O1>, List<L1>> data;
+    SynchronizedData<Required<R1>> data;
 
     bool received = false;
     auto connection =
