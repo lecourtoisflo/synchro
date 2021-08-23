@@ -52,7 +52,6 @@ TEST(synchrodata, data)
     {
     };
     SynchronizedData<Required<R1>> data;
-
     bool received = false;
     auto connection =
         data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });

@@ -103,38 +103,39 @@ private:
     template<class T>
     struct Broadcasters;
     template<class... Ts>
-    struct Broadcasters<std::tuple<Ts...>> : public std::tuple<Broadcaster<Ts>...>
+    struct Broadcasters<std::tuple<Ts...>> : std::tuple<Broadcaster<Ts>...>
     {
+        using type = std::tuple<Broadcaster<Ts>...>;
     };
     template<class T>
     struct Data;
     template<class... Ts>
-    struct Data<std::tuple<Ts...>> : public std::tuple<std::shared_ptr<Ts>...>
+    struct Data<std::tuple<Ts...>> : std::tuple<std::shared_ptr<Ts>...>
     {
+        using type = std::tuple<std::shared_ptr<Ts>...>;
     };
 
 private:
     bool areAllRequiredPresent() const
     {
-        return std::get<0>(requiredData_).use_count() > 0;
-        // return std::apply([](auto&... ptr) { return (... && (ptr.use_count() > 0)); },
-        //                   requiredData_);
+        return std::apply([](auto&... ptr) { return (... && (ptr.use_count() > 0)); },
+                          requiredData_);
     }
 
     void clearAlldata()
     {
-        // auto clear = [](auto&... ptr) { (..., ptr.reset()); };
-        // std::apply(clear, requiredData_);
+        auto clear = [](auto&... ptr) { (..., ptr.reset()); };
+        std::apply(clear, requiredData_);
         // std::apply(clear, optionalData_);
         // std::apply([](auto&... list) { (..., list.clear()); }, listData_);
     }
 
 private:
-    Broadcasters<typename R::TupleType> requiredBroadcasters_;
+    typename Broadcasters<typename R::TupleType>::type requiredBroadcasters_;
     // std::tuple<Broadcaster<Type<O>>> optionalBroadcasters_;
     // std::tuple<Broadcaster<Type<L>>> listBroadcasters_;
 
-    Data<typename R::TupleType> requiredData_;
+    typename Data<typename R::TupleType>::type requiredData_;
     // std::tuple<std::shared_ptr<Type<O>>> optionalData_;
     // std::tuple<std::list<std::shared_ptr<Type<L>>>> listData_;
 };
