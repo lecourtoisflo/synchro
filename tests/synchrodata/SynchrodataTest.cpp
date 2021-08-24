@@ -49,12 +49,10 @@ struct L2
 TEST(synchrodata, data)
 {
     SynchronizedData<Required<R1>, Optional<O1>> data;
-    bool received     = false;
-    bool received_opt = false;
-    auto connection =
-        data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });
-    auto connection_opt =
-        data.onReceived<O1>([&received_opt](const std::shared_ptr<O1>&) { received_opt = true; });
+    bool received       = false;
+    bool received_opt   = false;
+    auto connection     = data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });
+    auto connection_opt = data.onReceived<O1>([&received_opt](const std::shared_ptr<O1>&) { received_opt = true; });
 
     data.send<R1>(std::make_shared<R1>());
     ASSERT_TRUE(received);
@@ -71,18 +69,13 @@ TEST(synchrodata, waitingData)
     bool received_opt          = false;
     bool received_opt2         = false;
     unsigned int received_list = 0;
-    auto connection =
-        data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });
-    auto connection2 =
-        data.onReceived<R2>([&received2](const std::shared_ptr<R2>&) { received2 = true; });
+    auto connection            = data.onReceived<R1>([&received](const std::shared_ptr<R1>&) { received = true; });
+    auto connection2           = data.onReceived<R2>([&received2](const std::shared_ptr<R2>&) { received2 = true; });
 
-    auto connection_opt =
-        data.onReceived<O1>([&received_opt](const std::shared_ptr<O1>&) { received_opt = true; });
-    auto connection_opt2 =
-        data.onReceived<O2>([&received_opt2](const std::shared_ptr<O2>&) { received_opt2 = true; });
+    auto connection_opt  = data.onReceived<O1>([&received_opt](const std::shared_ptr<O1>&) { received_opt = true; });
+    auto connection_opt2 = data.onReceived<O2>([&received_opt2](const std::shared_ptr<O2>&) { received_opt2 = true; });
 
-    auto connection_list =
-        data.onReceived<L1>([&received_list](const std::shared_ptr<L1>&) { ++received_list; });
+    auto connection_list = data.onReceived<L1>([&received_list](const std::shared_ptr<L1>&) { ++received_list; });
 
     data.send<O1>(std::make_shared<O1>());
     ASSERT_FALSE(received_opt); // pending
@@ -109,4 +102,9 @@ TEST(synchrodata, waitingData)
     received = false;
     data.send<R1>(std::make_shared<R1>());
     ASSERT_TRUE(received);
+
+    data.clear();
+    received = false;
+    data.send<R1>(std::make_shared<R1>());
+    ASSERT_FALSE(received);
 }

@@ -130,6 +130,17 @@ public:
         }
     }
 
+    /// @brief Clear all broadcasters and pending data
+    void clear()
+    {
+        clearAlldata();
+        auto clear = [](auto&... broadcaster) { (..., broadcaster.clear()); };
+        std::apply(clear, requiredBroadcasters_);
+        std::apply(clear, optionalBroadcasters_);
+        std::apply(clear, listBroadcasters_);
+        initDone_ = false;
+    }
+
 private:
     /// @brief Trait class to check if a type T is contained in the tuple Tuple
     template<class T, class Tuple>

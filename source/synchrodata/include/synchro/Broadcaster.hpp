@@ -33,6 +33,9 @@ public:
      */
     void send(const std::shared_ptr<T>& data) { signal_(data); }
 
+    /// @brief Clear all notifications callbacks
+    void clear() { signal_.disconnect_all_slots(); }
+
 private:
     using Signal = boost::signals2::signal<CallbackType>;
 
