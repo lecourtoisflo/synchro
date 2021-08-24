@@ -99,11 +99,6 @@ add_subdirectory(source)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# CMake scripts extensions
-target_set_warnings(Synchro ENABLE ALL AS_ERROR ALL DISABLE Annoying) # Helper that can set default warning flags for you
-# target_enable_lto(Synchro optimized) #enable lto if available for non-debug configurations
-copy_dlls_for_debug(Synchro "" "") # Copy dependencies next to the executable (DLLs for example)
-
 # Setup our project as the startup project for Visual so that people don't need to do it manually
 set_directory_properties(PROPERTIES VS_STARTUP_PROJECT Synchro)
 
@@ -190,7 +185,7 @@ if(${PROJECT_NAME}_INSTALL)
     # It will then need a call to `install(EXPORT)`
     install(
         TARGETS 
-          Synchro # We can install executables
+            synchrodata
         EXPORT ${PROJECT_NAME}_Targets
     # Following is only needed pre-cmake3.14
     #    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
