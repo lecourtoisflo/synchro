@@ -4,10 +4,6 @@
 #include "synchro/Broadcaster.hpp"
 #include "synchro/SynchronizedData.hpp"
 
-#include <iostream>
-#include <typeindex>
-#include <typeinfo>
-
 using namespace synchro;
 
 TEST(synchrodata, broadcast)

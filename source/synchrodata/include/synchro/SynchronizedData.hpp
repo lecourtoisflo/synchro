@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Broadcaster.hpp"
+
+#include <atomic>
 #include <list>
 #include <memory>
 #include <tuple>
@@ -9,39 +11,59 @@
 namespace synchro
 {
 
+/// @brief Trait class to define required type for synchronized data
 template<class... Ts>
 struct Required
 {
-    using TupleType = std::tuple<Ts...>;
+    using TupleType = std::tuple<Ts...>; ///< tuple type for required data
 };
 
+/// @brief Trait class to define optional type for synchronized data
 template<class... Ts>
 struct Optional
 {
-    using TupleType = std::tuple<Ts...>;
+    using TupleType = std::tuple<Ts...>; ///< tuple type for optional data
 };
 
+/// @brief Trait class to define listed type for synchronized data
 template<class... Ts>
 struct List
 {
-    using TupleType = std::tuple<Ts...>;
+    using TupleType = std::tuple<Ts...>; ///< tuple type for listed data
 };
 
-template<class T, class Tuple>
-struct Contains;
-template<class T, class... Ts>
-struct Contains<T, std::tuple<Ts...>> : std::disjunction<std::is_same<T, Ts>...>
-{
-};
-
+/**
+ * @brief Synchronized data
+ *
+ * Synchronized data allows to synchronize notifications when receiving data according to if
+ * required data are received:
+ * - R : required types (based on @a Required trait). Synchronized data contains 1 element by
+ * required type. No notification is sent unless at least one required data of each type is
+ * received. In the case multiple required elements of the same type are received before full
+ * synchronization is achieved, only the last one will be sent.
+ * - O : optional types (based on @a Optional trait). Synchronized data contains at most 1 element
+ * by optional type. No notification is sent unless at least one required data of each type is
+ * received. In the case multiple optional elements of the same type are received before full
+ * synchronization is achieved, only the last one will be sent.
+ * - L : listed types (based on @a List trait). Synchronized data contains n elements by listed
+ * type. No notification is sent unless at least one required data of each type is received. A
+ * notification will be sent for each element of each list type.
+ */
 template<class R, class O = Optional<>, class L = List<>>
 class SynchronizedData
 {
 public:
+    /// @brief Connection type by element
     template<class T>
     using Connection = typename Broadcaster<T>::Connection;
 
 public:
+    /**
+     * @brief Register callback for type T
+     *
+     * @param cbk callback with prototype void(const std::shared_ptr<T>&) to received notification
+     * @returns broadcaster connection to store
+     */
     template<class T>
     Connection<T> onReceived(typename Broadcaster<T>::Callback&& cbk)
     {
@@ -63,6 +85,13 @@ public:
         return Connection<T>();
     }
 
+    /**
+     * @brief Send a data element
+     *
+     * does nothing if element is not in the defined types of the synchronized data
+     *
+     * @param data the element to send
+     */
     template<class T>
     void send(const std::shared_ptr<T>& data)
     {
@@ -105,10 +134,18 @@ public:
     }
 
 private:
+    /// @brief Trait class to check if a type T is contained in the tuple Tuple
+    template<class T, class Tuple>
+    struct Contains;
+    /// @brief Specialization for tuple
+    template<class T, class... Ts>
+    struct Contains<T, std::tuple<Ts...>> : std::disjunction<std::is_same<T, Ts>...>
+    {
+    };
     template<class T>
     struct Broadcasters;
     template<class... Ts>
-    struct Broadcasters<std::tuple<Ts...>> : std::tuple<Broadcaster<Ts>...>
+    struct Broadcasters<std::tuple<Ts...>>
     {
         using type = std::tuple<Broadcaster<Ts>...>;
     };
@@ -224,7 +261,7 @@ private:
     }
 
 private:
-    bool initDone_ = false;
+    std::atomic_bool initDone_ = false;
     BroadcastersTuple<R> requiredBroadcasters_;
     BroadcastersTuple<O> optionalBroadcasters_;
     BroadcastersTuple<L> listBroadcasters_;
