@@ -98,7 +98,7 @@ public:
         if constexpr (Contains<T, typename R::TupleType>())
         {
             std::get<std::shared_ptr<T>>(requiredData_) = data; // required for following test
-            if (areAllRequiredPresent())
+            if (initDone_ || areAllRequiredPresent())
             {
                 std::get<Broadcaster<T>>(requiredBroadcasters_).send(data);
                 std::get<std::shared_ptr<T>>(requiredData_).reset();

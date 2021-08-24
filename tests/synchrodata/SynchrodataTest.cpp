@@ -105,4 +105,8 @@ TEST(synchrodata, waitingData)
 
     data.send<O2>(std::make_shared<O2>());
     ASSERT_TRUE(received_opt2);
+
+    received = false;
+    data.send<R1>(std::make_shared<R1>());
+    ASSERT_TRUE(received);
 }
