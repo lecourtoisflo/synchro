@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Broadcaster.hpp"
+#include "util/SynchroUtils.hpp"
 
 #include <atomic>
 #include <list>
@@ -67,15 +68,15 @@ public:
     template<class T>
     Connection<T> onReceived(typename Broadcaster<T>::Callback&& cbk)
     {
-        if constexpr (Contains<T, typename R::TupleType>())
+        if constexpr (util::Contains<T, typename R::TupleType>())
         {
             return std::get<Broadcaster<T>>(requiredBroadcasters_).onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
         }
-        else if constexpr (Contains<T, typename O::TupleType>())
+        else if constexpr (util::Contains<T, typename O::TupleType>())
         {
             return std::get<Broadcaster<T>>(optionalBroadcasters_).onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
         }
-        else if constexpr (Contains<T, typename L::TupleType>())
+        else if constexpr (util::Contains<T, typename L::TupleType>())
         {
             return std::get<Broadcaster<T>>(listBroadcasters_).onReceived(std::forward<typename Broadcaster<T>::Callback>(cbk));
         }
@@ -92,7 +93,7 @@ public:
     template<class T>
     void send(const std::shared_ptr<T>& data)
     {
-        if constexpr (Contains<T, typename R::TupleType>())
+        if constexpr (util::Contains<T, typename R::TupleType>())
         {
             std::get<std::shared_ptr<T>>(requiredPendingData_) = data; // required for following test
             if (initDone_ || areAllRequiredPresent())
@@ -110,7 +111,7 @@ public:
                 initDone_ = true;
             }
         }
-        else if constexpr (Contains<T, typename O::TupleType>())
+        else if constexpr (util::Contains<T, typename O::TupleType>())
         {
             if (initDone_)
             {
@@ -119,7 +120,7 @@ public:
             }
             std::get<std::shared_ptr<T>>(optionalPendingData_) = data; // put in pending
         }
-        else if constexpr (Contains<T, typename L::TupleType>())
+        else if constexpr (util::Contains<T, typename L::TupleType>())
         {
             if (initDone_)
             {
@@ -142,15 +143,6 @@ public:
     }
 
 private:
-    /// @brief Trait class to check if a type T is contained in the tuple Tuple
-    template<class T, class Tuple>
-    struct Contains;
-    /// @brief Specialization for tuple
-    template<class T, class... Ts>
-    struct Contains<T, std::tuple<Ts...>> : std::disjunction<std::is_same<T, Ts>...>
-    {
-    };
-
     /// @brief Broadcasters trait class to define tuple of broadcasters
     template<class T>
     struct Broadcasters;

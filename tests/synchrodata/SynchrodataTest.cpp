@@ -3,6 +3,7 @@
 
 #include "synchro/Broadcaster.hpp"
 #include "synchro/SynchronizedData.hpp"
+#include "synchro/Synchronizer.hpp"
 
 using namespace synchro;
 
@@ -107,4 +108,52 @@ TEST(synchrodata, waitingData)
     received = false;
     data.send<R1>(std::make_shared<R1>());
     ASSERT_FALSE(received);
+}
+
+template<class T>
+struct Pooler : public synchro::Broadcaster<T>
+{
+    Pooler() : data(std::make_shared<T>()) {}
+
+    void sendData() { this->send(data); }
+    std::shared_ptr<T> data;
+};
+
+TEST(Synchronizer, base)
+{
+    bool r1_received = false;
+    synchro::Synchronizer<Pooler, Required<R1>, Optional<O1>> synchronizer;
+    auto& data = synchronizer.data();
+
+    data.onReceived<R1>([&r1_received](const std::shared_ptr<R1>&) { r1_received = true; });
+    synchronizer.pooler<R1>().sendData();
+    ASSERT_TRUE(r1_received);
+}
+
+TEST(Synchronizer, sync)
+{
+    bool r1_received = false;
+    bool r2_received = false;
+    bool o1_received = false;
+    size_t l1_count  = 0;
+    synchro::Synchronizer<Pooler, Required<R1, R2>, Optional<O1>, List<L1>> synchronizer;
+    auto& data = synchronizer.data();
+
+    data.onReceived<R1>([&r1_received](const std::shared_ptr<R1>&) { r1_received = true; });
+    data.onReceived<R2>([&r2_received](const std::shared_ptr<R2>&) { r2_received = true; });
+    data.onReceived<O1>([&o1_received](const std::shared_ptr<O1>&) { o1_received = true; });
+    data.onReceived<L1>([&l1_count](const std::shared_ptr<L1>&) { l1_count++; });
+    synchronizer.pooler<L1>().sendData();
+    synchronizer.pooler<L1>().sendData();
+    synchronizer.pooler<O1>().sendData();
+    synchronizer.pooler<R1>().sendData();
+    ASSERT_FALSE(r1_received);
+    ASSERT_FALSE(r2_received);
+    ASSERT_FALSE(o1_received);
+    ASSERT_EQ(l1_count, 0);
+    synchronizer.pooler<R2>().sendData();
+    ASSERT_TRUE(r1_received);
+    ASSERT_TRUE(r2_received);
+    ASSERT_TRUE(o1_received);
+    ASSERT_EQ(l1_count, 2);
 }
