@@ -1,3 +1,3 @@
 # Synchro
 
-sync library
+Small library allowing to synchronize reception of asynchronous data
