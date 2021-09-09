@@ -122,7 +122,7 @@ struct Pooler : public synchro::Broadcaster<T>
 TEST(Synchronizer, base)
 {
     bool r1_received = false;
-    synchro::Synchronizer<Pooler, Required<R1>, Optional<O1>> synchronizer;
+    synchro::Synchronizer<Pooler, Required<R1>, Optional<O1>> synchronizer(std::make_tuple(Pooler<R1>()), std::make_tuple(Pooler<O1>()));
     auto& data = synchronizer.data();
 
     data.onReceived<R1>([&r1_received](const std::shared_ptr<R1>&) { r1_received = true; });
@@ -136,7 +136,8 @@ TEST(Synchronizer, sync)
     bool r2_received = false;
     bool o1_received = false;
     size_t l1_count  = 0;
-    synchro::Synchronizer<Pooler, Required<R1, R2>, Optional<O1>, List<L1>> synchronizer;
+    synchro::Synchronizer<Pooler, Required<R1, R2>, Optional<O1>, List<L1>> synchronizer(std::make_tuple(Pooler<R1>(), Pooler<R2>()),
+                                                                                         std::make_tuple(Pooler<O1>()), std::make_tuple(Pooler<L1>()));
     auto& data = synchronizer.data();
 
     data.onReceived<R1>([&r1_received](const std::shared_ptr<R1>&) { r1_received = true; });

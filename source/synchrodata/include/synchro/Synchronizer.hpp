@@ -8,7 +8,7 @@
  * @brief Data synchronizer
  *
  * Requirements for R, O and L are the same as for SynchronizedData
- * Requirements for Pooler are:
+ * Requirements for Pooler<T> are:
  * - default constructible
  * - function boost::signals2::connection onReceived(Callback&& cbk) where Callback is function void(const std::shared_ptr<T>&)
  */
@@ -19,9 +19,22 @@ class Synchronizer
 {
 public:
     using Data = SynchronizedData<R, O, L>;
+    template<class T>
+    struct Poolers;
+    template<class... Ts>
+    struct Poolers<std::tuple<Ts...>>
+    {
+        using type = typename std::tuple<Pooler<Ts>...>;
+    };
+    using RequiredPoolers = typename Poolers<typename R::TupleType>::type;
+    using OptionalPoolers = typename Poolers<typename O::TupleType>::type;
+    using ListPoolers     = typename Poolers<typename L::TupleType>::type;
 
 public:
-    Synchronizer()
+    Synchronizer(RequiredPoolers&& requiredPoolers, OptionalPoolers&& optionalPoolers = OptionalPoolers{}, ListPoolers&& listPoolers = ListPoolers{})
+        : requiredPoolers_(std::forward<RequiredPoolers>(requiredPoolers)),
+          optionalPoolers_(std::forward<OptionalPoolers>(optionalPoolers)),
+          listPoolers_(std::forward<ListPoolers>(listPoolers))
     {
         connect(requiredPoolers_);
         connect(optionalPoolers_);
@@ -46,13 +59,6 @@ public:
     }
 
 private:
-    template<class T>
-    struct Poolers;
-    template<class... Ts>
-    struct Poolers<std::tuple<Ts...>>
-    {
-        using type = typename std::tuple<Pooler<Ts>...>;
-    };
     using Connection = boost::signals2::connection;
 
 private:
@@ -74,8 +80,8 @@ private:
 private:
     std::vector<Connection> connections_;
     Data data_;
-    typename Poolers<typename R::TupleType>::type requiredPoolers_;
-    typename Poolers<typename O::TupleType>::type optionalPoolers_;
-    typename Poolers<typename L::TupleType>::type listPoolers_;
+    RequiredPoolers requiredPoolers_;
+    OptionalPoolers optionalPoolers_;
+    ListPoolers listPoolers_;
 };
 } // namespace synchro
