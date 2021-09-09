@@ -9,8 +9,7 @@
  *
  * Requirements for R, O and L are the same as for SynchronizedData
  * Requirements for Pooler<T> are:
- * - default constructible
- * - function boost::signals2::connection onReceived(Callback&& cbk) where Callback is function void(const std::shared_ptr<T>&)
+ * - function boost::signals2::connection onReceived(Callback&& cbk) where Callback is a function type with prototype void(const std::shared_ptr<T>&)
  */
 namespace synchro
 {
@@ -19,8 +18,11 @@ class Synchronizer
 {
 public:
     using Data = SynchronizedData<R, O, L>;
+
+    /// @brief Trait class to define tuple of Poolers
     template<class T>
     struct Poolers;
+    /// @brief Specialization for tuples
     template<class... Ts>
     struct Poolers<std::tuple<Ts...>>
     {
@@ -31,6 +33,13 @@ public:
     using ListPoolers     = typename Poolers<typename L::TupleType>::type;
 
 public:
+    /**
+     * @brief Constructor
+     *
+     * @param requiredPoolers the tuple of poolers for required types
+     * @param optionalPoolers the tuple of poolers for optional types
+     * @param listPoolers the tuple of poolers for list types
+     */
     Synchronizer(RequiredPoolers&& requiredPoolers, OptionalPoolers&& optionalPoolers = OptionalPoolers{}, ListPoolers&& listPoolers = ListPoolers{})
         : requiredPoolers_(std::forward<RequiredPoolers>(requiredPoolers)),
           optionalPoolers_(std::forward<OptionalPoolers>(optionalPoolers)),
@@ -41,8 +50,19 @@ public:
         connect(listPoolers_);
     }
 
+    /**
+     * @brief Retrieve underlying synchronized data
+     * @returns the synchronized data in synchronizer
+     */
     Data& data() { return data_; }
 
+    /**
+     * @brief Retrieve underlying pooler
+     *
+     * Function will not compile if T is neither a required, optional and list type of the synchronizer
+     *
+     * @returns the corresonding underlying pooler for type T
+     */
     template<class T>
     Pooler<T>& pooler()
     {
