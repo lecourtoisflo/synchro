@@ -132,11 +132,13 @@ if(${PROJECT_NAME}_USE_DOXYGEN AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.9)
     )
     if(DOXYGEN_FOUND)
         set(DOXYGEN_USE_MDFILE_AS_MAINPAGE README.md)
+        set(DOXYGEN_FILE_PATTERNS *.h *.cpp *.hpp)
         doxygen_add_docs(
-            doc
+            doc ALL
             README.md source
             COMMENT "Generate man pages"
         )
+        install(DIRECTORY ${CMAKE_BINARY_DIR}/html DESTINATION doc)
     endif()
 endif()
 

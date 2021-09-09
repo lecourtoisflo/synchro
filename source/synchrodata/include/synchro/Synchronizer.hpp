@@ -4,6 +4,8 @@
 
 #include <vector>
 
+namespace synchro
+{
 /**
  * @brief Data synchronizer
  *
@@ -11,13 +13,11 @@
  * Requirements for Pooler<T> are:
  * - function boost::signals2::connection onReceived(Callback&& cbk) where Callback is a function type with prototype void(const std::shared_ptr<T>&)
  */
-namespace synchro
-{
 template<template<class> class Pooler, class R, class O = Optional<>, class L = List<>>
 class Synchronizer
 {
 public:
-    using Data = SynchronizedData<R, O, L>;
+    using Data = SynchronizedData<R, O, L>; ///< Synchronized data type
 
     /// @brief Trait class to define tuple of Poolers
     template<class T>
@@ -26,11 +26,11 @@ public:
     template<class... Ts>
     struct Poolers<std::tuple<Ts...>>
     {
-        using type = typename std::tuple<Pooler<Ts>...>;
+        using type = typename std::tuple<Pooler<Ts>...>; ///< Tuple of poolers type definition
     };
-    using RequiredPoolers = typename Poolers<typename R::TupleType>::type;
-    using OptionalPoolers = typename Poolers<typename O::TupleType>::type;
-    using ListPoolers     = typename Poolers<typename L::TupleType>::type;
+    using RequiredPoolers = typename Poolers<typename R::TupleType>::type; ///< Tuple of poolers for required types definition
+    using OptionalPoolers = typename Poolers<typename O::TupleType>::type; ///< Tuple of poolers for optional types definition
+    using ListPoolers     = typename Poolers<typename L::TupleType>::type; ///< Tuple of poolers for list types definition
 
 public:
     /**
