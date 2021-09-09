@@ -4,7 +4,6 @@
 
 #include <functional>
 #include <memory>
-#include <vector>
 
 namespace synchro
 {
