@@ -12,26 +12,24 @@
 namespace synchro
 {
 
-/// @brief Trait class to define required type for synchronized data
+/// @brief Trait class to define tuple type wrapper
 template<class... Ts>
-struct Required
+struct TupleWrapper
 {
     using TupleType = std::tuple<Ts...>; ///< tuple type for required data
 };
 
+/// @brief Trait class to define required type for synchronized data
+template<class... Ts>
+using Required = TupleWrapper<Ts...>;
+
 /// @brief Trait class to define optional type for synchronized data
 template<class... Ts>
-struct Optional
-{
-    using TupleType = std::tuple<Ts...>; ///< tuple type for optional data
-};
+using Optional = TupleWrapper<Ts...>;
 
 /// @brief Trait class to define listed type for synchronized data
 template<class... Ts>
-struct List
-{
-    using TupleType = std::tuple<Ts...>; ///< tuple type for listed data
-};
+using List = TupleWrapper<Ts...>;
 
 /**
  * @brief Synchronized data
