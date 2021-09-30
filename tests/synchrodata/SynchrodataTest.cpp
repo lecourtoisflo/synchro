@@ -157,4 +157,15 @@ TEST(Synchronizer, sync)
     ASSERT_TRUE(r2_received);
     ASSERT_TRUE(o1_received);
     ASSERT_EQ(l1_count, 2);
+
+    r1_received = false;
+    l1_count    = 0;
+    synchro::Synchronizer<Pooler, Required<R1>, Optional<>, List<L1>> synchronizer2(std::make_tuple(Pooler<R1>()), {}, std::make_tuple(Pooler<L1>()));
+    auto& data2 = synchronizer2.data();
+    data2.onReceived<R1>([&r1_received](const std::shared_ptr<R1>&) { r1_received = true; });
+    data2.onReceived<L1>([&l1_count](const std::shared_ptr<L1>&) { l1_count++; });
+    synchronizer2.pooler<L1>().sendData();
+    synchronizer2.pooler<R1>().sendData();
+    ASSERT_TRUE(r1_received);
+    ASSERT_EQ(l1_count, 1);
 }
