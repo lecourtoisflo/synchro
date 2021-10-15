@@ -67,7 +67,10 @@ public:
     Pooler<T>& pooler()
     {
         static_assert(util::Contains<T, typename R::TupleType>() || util::Contains<T, typename O::TupleType>() || util::Contains<T, typename L::TupleType>());
-        if constexpr (util::Contains<T, typename R::TupleType>()) { return std::get<Pooler<T>>(requiredPoolers_); }
+        if constexpr (util::Contains<T, typename R::TupleType>())
+        {
+            return std::get<Pooler<T>>(requiredPoolers_);
+        }
         else if constexpr (util::Contains<T, typename O::TupleType>())
         {
             return std::get<Pooler<T>>(optionalPoolers_);

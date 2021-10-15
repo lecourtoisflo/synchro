@@ -196,7 +196,10 @@ private:
     template<class T>
     static void sendSignal(Broadcaster<T>& sender, const std::shared_ptr<T>& data)
     {
-        if (data) { sender.send(data); }
+        if (data)
+        {
+            sender.send(data);
+        }
     }
 
     template<class... Ts>

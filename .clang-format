@@ -11,7 +11,7 @@ IndentWidth:     4
 AlignConsecutiveAssignments: true
 AllowShortBlocksOnASingleLine: true
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortIfStatementsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Never
 AlwaysBreakTemplateDeclarations: true
 BreakBeforeBraces: Allman
 ColumnLimit:     160
